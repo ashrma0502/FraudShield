@@ -1,0 +1,92 @@
+# ============================================================
+# FraudShield — .gitignore
+# ============================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+wheels/
+*.egg-link
+.installed.cfg
+lib/
+lib64/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/backend/staticfiles/
+/backend/media/
+/backend/ml_models/
+
+# Environment files
+.env
+
+# Coverage / testing
+.coverage
+.tox/
+.pytest_cache/
+htmlcov/
+coverage.xml
+*.cover
+
+# Node / Frontend
+node_modules/
+/frontend/dist/
+/frontend/.cache/
+/frontend/.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# IDEs & editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.swn
+.DS_Store
+Thumbs.db
+
+# OS
+*.orig
+*.bak
+*.tmp
+
+# Secrets
+*.pem
+*.key
+*.p12
+*.pfx
+
+# ML artefacts
+*.pkl
+*.joblib
+*.h5
+*.onnx
+
+# Notebooks — raw dataset files (too large for git)
+notebooks/data/
+notebooks/outputs/figures/
+# Keep the summary text in git
+!notebooks/outputs/summary.md
