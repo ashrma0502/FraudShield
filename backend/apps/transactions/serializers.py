@@ -1,5 +1,3 @@
-import uuid
-
 from rest_framework import serializers
 
 from .models import AnalystDecision, Transaction
@@ -10,25 +8,14 @@ class TransactionSubmitSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = Transaction
-        fields = [
-            "transaction_id", "amount", "currency", "occurred_at",
-            "product_type",
-            "card_number_bin", "card_expiry", "card_cvv_result",
-            "card_type", "card_network", "card_bank",
-            "p_email_domain", "r_email_domain",
-            "addr1", "addr2", "dist1", "dist2",
-            "ip_address", "device_info",
-            "c_features", "d_features", "m_features", "v_features",
-        ]
-
-    def validate_transaction_id(self, value):
-        return value or str(uuid.uuid4())
+        fields = ["id", "amount", "submitted_at"]
+        read_only_fields = ["id"]
 
 
 class TransactionReadSerializer(serializers.ModelSerializer):
     """Full read-only representation for analysts/admins."""
-    customer_email   = serializers.EmailField(source="customer.email", read_only=True)
-    merchant_name    = serializers.CharField(source="merchant.business_name", read_only=True)
+    customer_email = serializers.EmailField(source="customer.email", read_only=True)
+    merchant_name  = serializers.CharField(source="merchant.business_name", read_only=True)
     analyst_decision = serializers.SerializerMethodField()
 
     class Meta:
@@ -39,28 +26,20 @@ class TransactionReadSerializer(serializers.ModelSerializer):
         try:
             d = obj.analyst_decision
             return {
-                "analyst":    d.analyst.email if d.analyst else None,
-                "decision":   d.decision,
-                "rationale":  d.rationale,
-                "decided_at": d.decided_at,
+                "analyst":  d.analyst.email if d.analyst else None,
+                "decision": d.decision,
             }
         except AnalystDecision.DoesNotExist:
             return None
 
 
 class MerchantTransactionSerializer(serializers.ModelSerializer):
-    """Merchant-facing: exposes outcome fields only, hides internal ML data."""
+    """Merchant-facing: exposes outcome fields only."""
 
     class Meta:
         model  = Transaction
-        fields = [
-            "transaction_id", "amount", "currency", "occurred_at",
-            "status", "fraud_score", "flag_layer",
-        ]
-        read_only_fields = [
-            "transaction_id", "amount", "currency", "occurred_at",
-            "status", "fraud_score", "flag_layer",
-        ]
+        fields = ["id", "amount", "submitted_at", "status", "fraud_score", "flagged_by"]
+        read_only_fields = fields
 
 
 class AnalystDecisionSerializer(serializers.ModelSerializer):
@@ -68,5 +47,5 @@ class AnalystDecisionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = AnalystDecision
-        fields = ["id", "transaction", "decision", "rationale", "decided_at"]
-        read_only_fields = ["id", "decided_at"]
+        fields = ["id", "transaction", "decision"]
+        read_only_fields = ["id"]

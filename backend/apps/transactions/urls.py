@@ -13,6 +13,6 @@ urlpatterns = [
     path("review-queue/", views.ReviewQueueView.as_view(),             name="review-queue"),
     # Analyst: record a decision (must be above <str:transaction_id>/ to avoid catch-all)
     path("decide/",       views.AnalystDecisionCreateView.as_view(),   name="decide"),
-    # Analyst/Admin: transaction detail by ID
-    path("<str:transaction_id>/", views.TransactionDetailView.as_view(), name="detail"),
+    # Analyst/Admin: transaction detail by UUID
+    path("<uuid:pk>/", views.TransactionDetailView.as_view(), name="detail"),
 ]

@@ -4,12 +4,12 @@ from .models import MLModel, PredictionLog, ThresholdConfig
 
 
 class ThresholdConfigSerializer(serializers.ModelSerializer):
-    changed_by_email = serializers.EmailField(source="changed_by.email", read_only=True)
+    updated_by_email = serializers.EmailField(source="updated_by.email", read_only=True)
 
     class Meta:
         model  = ThresholdConfig
-        fields = ["id", "name", "value", "changed_by_email", "changed_at", "rationale"]
-        read_only_fields = ["id", "changed_by_email", "changed_at"]
+        fields = ["id", "value", "updated_by_email", "rationale"]
+        read_only_fields = ["id", "updated_by_email"]
 
 
 class MLModelSerializer(serializers.ModelSerializer):
@@ -30,9 +30,6 @@ class PredictionLogSerializer(serializers.ModelSerializer):
 
 class PredictionRequestSerializer(serializers.Serializer):
     """Input schema for the real-time prediction endpoint."""
-    transaction_id     = serializers.CharField(max_length=64)
-    amount             = serializers.FloatField()
-    ip_address         = serializers.IPAddressField(required=False, allow_blank=True)
-    device_info        = serializers.CharField(max_length=256, required=False, allow_blank=True)
-    device_fingerprint = serializers.CharField(max_length=256, required=False, allow_blank=True)
-    occurred_at        = serializers.DateTimeField()
+    transaction_id = serializers.UUIDField()
+    amount         = serializers.FloatField()
+    submitted_at   = serializers.DateTimeField()

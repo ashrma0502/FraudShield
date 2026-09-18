@@ -71,13 +71,11 @@ def admin_client(admin_user):
 @pytest.fixture
 def transaction(db, customer, merchant_user):
     return Transaction.objects.create(
-        transaction_id="txn-001",
         customer=customer,
         merchant=merchant_user.merchant_profile,
         amount="250.00",
-        currency="USD",
-        occurred_at=timezone.now(),
+        submitted_at=timezone.now(),
         status=Transaction.Status.PENDING,
         fraud_score=0.85,
-        flag_layer=Transaction.FlagLayer.MODEL,
+        flagged_by=Transaction.FlaggedBy.MODEL,
     )

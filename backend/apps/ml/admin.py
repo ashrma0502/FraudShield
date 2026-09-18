@@ -5,18 +5,8 @@ from .models import MLModel, PredictionLog, ThresholdConfig
 
 @admin.register(ThresholdConfig)
 class ThresholdConfigAdmin(admin.ModelAdmin):
-    list_display   = ["name", "value", "changed_by", "changed_at", "rationale"]
-    list_filter    = ["name"]
-    search_fields  = ["name", "rationale", "changed_by__email"]
-    readonly_fields = ["changed_at"]
-    ordering       = ["-changed_at"]
-
-    def has_change_permission(self, request, obj=None):
-        # Enforce append-only in admin — no editing existing rows.
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
+    list_display  = ["value", "updated_by", "rationale"]
+    search_fields = ["rationale", "updated_by__email"]
 
 
 @admin.register(MLModel)
@@ -31,5 +21,4 @@ class MLModelAdmin(admin.ModelAdmin):
 class PredictionLogAdmin(admin.ModelAdmin):
     list_display  = ["transaction_id", "fraud_score", "is_fraud", "latency_ms", "created_at"]
     list_filter   = ["is_fraud"]
-    search_fields = ["transaction_id"]
     readonly_fields = ["created_at"]

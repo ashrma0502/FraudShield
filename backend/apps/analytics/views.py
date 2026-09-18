@@ -25,7 +25,7 @@ class DailyStatsListView(generics.ListAPIView):
 def dashboard_summary(request):
     """Aggregated transaction summary for the past 30 days (analyst/admin only)."""
     since = timezone.now() - timedelta(days=30)
-    qs    = Transaction.objects.filter(created_at__gte=since)
+    qs    = Transaction.objects.filter(submitted_at__gte=since)
 
     agg = qs.aggregate(
         total           = Count("id"),

@@ -30,7 +30,7 @@ class ReviewQueueView(generics.ListAPIView):
     serializer_class   = TransactionReadSerializer
     permission_classes = [permissions.IsAuthenticated, IsAnalystOrAdmin]
     filter_backends    = [filters.OrderingFilter]
-    ordering_fields    = ["fraud_score", "occurred_at", "status"]
+    ordering_fields    = ["fraud_score", "submitted_at", "status"]
     ordering           = ["-fraud_score"]
 
     def get_queryset(self):
@@ -44,11 +44,11 @@ class ReviewQueueView(generics.ListAPIView):
 
 
 class TransactionDetailView(generics.RetrieveAPIView):
-    """Analysts/Admins: retrieve any transaction by its transaction_id."""
+    """Analysts/Admins: retrieve any transaction by its UUID."""
     serializer_class   = TransactionReadSerializer
     permission_classes = [permissions.IsAuthenticated, IsAnalystOrAdmin]
     queryset           = Transaction.objects.select_related("customer", "merchant")
-    lookup_field       = "transaction_id"
+    lookup_field       = "pk"
 
 
 class MerchantTransactionListView(generics.ListAPIView):
@@ -56,7 +56,7 @@ class MerchantTransactionListView(generics.ListAPIView):
     serializer_class   = MerchantTransactionSerializer
     permission_classes = [permissions.IsAuthenticated, IsMerchant]
     filter_backends    = [filters.OrderingFilter]
-    ordering           = ["-occurred_at"]
+    ordering           = ["-submitted_at"]
 
     def get_queryset(self):
         try:
@@ -75,4 +75,4 @@ class AnalystDecisionCreateView(generics.CreateAPIView):
         decision = serializer.save(analyst=self.request.user)
         txn = decision.transaction
         txn.status = decision.decision
-        txn.save(update_fields=["status", "updated_at"])
+        txn.save(update_fields=["status"])

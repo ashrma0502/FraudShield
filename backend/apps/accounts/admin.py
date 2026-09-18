@@ -10,13 +10,11 @@ class UserAdmin(BaseUserAdmin):
     list_filter   = ["role", "is_staff", "is_active"]
     search_fields = ["username", "email", "first_name", "last_name"]
     fieldsets = BaseUserAdmin.fieldsets + (
-        ("FraudShield", {"fields": ("role", "phone")}),
+        ("FraudShield", {"fields": ("role",)}),
     )
 
 
 @admin.register(MerchantProfile)
 class MerchantProfileAdmin(admin.ModelAdmin):
-    list_display  = ["business_name", "user", "business_type", "country", "created_at"]
+    list_display  = ["business_name", "user"]
     search_fields = ["business_name", "user__email"]
-    list_filter   = ["business_type", "country"]
-    readonly_fields = ["created_at"]

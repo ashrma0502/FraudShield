@@ -42,7 +42,7 @@ class ThresholdConfigCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsAdmin]
 
     def perform_create(self, serializer):
-        serializer.save(changed_by=self.request.user)
+        serializer.save(updated_by=self.request.user)
 
 
 @api_view(["POST"])
@@ -66,7 +66,7 @@ def predict(request):
     t0          = time.time()
     clf         = joblib.load(active_model.model_file.path)
     # Placeholder feature vector — replace with real feature engineering
-    features    = [[data["amount"], len(data.get("device_info", ""))]]
+    features    = [[data["amount"]]]
     fraud_score = float(clf.predict_proba(features)[0][1])
     latency_ms  = int((time.time() - t0) * 1000)
     is_fraud    = fraud_score >= 0.5

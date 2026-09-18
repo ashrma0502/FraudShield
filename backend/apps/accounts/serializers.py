@@ -14,7 +14,7 @@ class _BaseRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model  = User
         fields = ["username", "email", "first_name", "last_name",
-                  "phone", "password", "password_confirm"]
+                  "password", "password_confirm"]
 
     def validate(self, data):
         if data["password"] != data.pop("password_confirm"):
@@ -35,28 +35,17 @@ class CustomerRegisterSerializer(_BaseRegisterSerializer):
 class MerchantRegisterSerializer(_BaseRegisterSerializer):
     """Registration for the Merchant role — also creates a MerchantProfile."""
     business_name = serializers.CharField(max_length=128)
-    business_type = serializers.CharField(max_length=64, required=False, allow_blank=True)
-    website       = serializers.URLField(required=False, allow_blank=True)
-    country       = serializers.CharField(max_length=2, required=False, allow_blank=True)
 
     class Meta(_BaseRegisterSerializer.Meta):
-        fields = _BaseRegisterSerializer.Meta.fields + [
-            "business_name", "business_type", "website", "country"
-        ]
+        fields = _BaseRegisterSerializer.Meta.fields + ["business_name"]
 
     def create(self, validated_data):
-        profile_data = {
-            "business_name": validated_data.pop("business_name"),
-            "business_type": validated_data.pop("business_type", ""),
-            "website":       validated_data.pop("website", ""),
-            "country":       validated_data.pop("country", ""),
-        }
+        business_name = validated_data.pop("business_name")
         user = self._create_user(validated_data, User.Role.MERCHANT)
-        MerchantProfile.objects.create(user=user, **profile_data)
+        MerchantProfile.objects.create(user=user, business_name=business_name)
         return user
 
     def to_representation(self, instance):
-        # business_name lives on MerchantProfile, not User; delegate to UserSerializer
         return UserSerializer(instance).data
 
 
@@ -78,5 +67,5 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model  = User
         fields = ["id", "username", "email", "first_name", "last_name",
-                  "role", "phone", "date_joined"]
+                  "role", "date_joined"]
         read_only_fields = ["id", "role", "date_joined"]

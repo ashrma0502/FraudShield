@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -11,10 +13,8 @@ class User(AbstractUser):
         ANALYST  = "analyst",  "Analyst"
         ADMIN    = "admin",    "Admin"
 
-    role  = models.CharField(max_length=20, choices=Role.choices, default=Role.CUSTOMER)
-    phone = models.CharField(max_length=20, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    id   = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    role = models.CharField(max_length=20, choices=Role.choices, default=Role.CUSTOMER)
 
     class Meta:
         ordering = ["-date_joined"]
@@ -28,12 +28,9 @@ class User(AbstractUser):
 class MerchantProfile(models.Model):
     """Business profile for users with the Merchant role."""
 
+    id            = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user          = models.OneToOneField(User, on_delete=models.CASCADE, related_name="merchant_profile")
     business_name = models.CharField(max_length=128)
-    business_type = models.CharField(max_length=64, blank=True)
-    website       = models.URLField(blank=True)
-    country       = models.CharField(max_length=2, blank=True, help_text="ISO 3166-1 alpha-2")
-    created_at    = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Merchant Profile"

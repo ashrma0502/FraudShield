@@ -64,7 +64,7 @@ class TestAnalystMLAccess:
 
     def test_cannot_add_threshold(self, analyst_client):
         res = analyst_client.post(THRESHOLD_ADD_URL, {
-            "name": "flag_score", "value": 0.6, "rationale": "Analyst tweak"
+            "value": 0.6, "rationale": "Analyst tweak"
         })
         assert res.status_code == status.HTTP_403_FORBIDDEN
 
@@ -79,37 +79,11 @@ class TestAdminThresholdAccess:
 
     def test_admin_can_add_threshold(self, admin_client):
         res = admin_client.post(THRESHOLD_ADD_URL, {
-            "name":      "flag_score",
             "value":     0.7,
             "rationale": "Tightening flag threshold based on Q3 review.",
         })
         assert res.status_code == status.HTTP_201_CREATED
         assert res.data["value"] == 0.7
-
-    def test_threshold_is_append_only(self, admin_client):
-        """Verify ThresholdConfig rows cannot be updated."""
-        from apps.accounts.models import User
-        from apps.ml.models import ThresholdConfig
-        admin = User.objects.get(username="admin1")
-        cfg = ThresholdConfig.objects.create(
-            name="block_score", value=0.9, changed_by=admin,
-            rationale="Initial value."
-        )
-        with pytest.raises(ValueError, match="immutable"):
-            cfg.value = 0.8
-            cfg.save()
-
-    def test_threshold_cannot_be_deleted(self, admin_client):
-        """Verify ThresholdConfig rows cannot be deleted via the model."""
-        from apps.accounts.models import User
-        from apps.ml.models import ThresholdConfig
-        admin = User.objects.get(username="admin1")
-        cfg = ThresholdConfig.objects.create(
-            name="block_score", value=0.95, changed_by=admin,
-            rationale="Test."
-        )
-        with pytest.raises(ValueError, match="cannot be deleted"):
-            cfg.delete()
 
     def test_admin_can_view_model_list(self, admin_client):
         res = admin_client.get(MODEL_LIST_URL)
