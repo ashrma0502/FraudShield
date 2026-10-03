@@ -1,12 +1,32 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import Layout from './components/Layout';
+import Login from './pages/Login';
+import MerchantDashboard from './pages/MerchantDashboard';
+import AnalystQueue from './pages/AnalystQueue';
+
 function App() {
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-indigo-400 mb-3">FraudShield</h1>
-        <p className="text-gray-400 text-lg">Real-time fraud detection platform</p>
-      </div>
-    </div>
-  )
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          
+          <Route element={<Layout allowedRoles={['merchant']} />}>
+            <Route path="/merchant" element={<MerchantDashboard />} />
+          </Route>
+
+          <Route element={<Layout allowedRoles={['analyst', 'admin']} />}>
+            <Route path="/analyst" element={<AnalystQueue />} />
+          </Route>
+
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
