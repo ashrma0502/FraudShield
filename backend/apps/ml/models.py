@@ -13,8 +13,9 @@ class ThresholdConfig(models.Model):
         on_delete=models.SET_NULL, null=True,
         related_name="threshold_changes",
     )
-    value      = models.FloatField()
-    rationale  = models.CharField(max_length=512)
+    auto_block_threshold = models.FloatField(default=0.90, help_text="Scores above this are auto-declined")
+    flag_threshold       = models.FloatField(default=0.75, help_text="Scores above this are flagged for manual review")
+    rationale            = models.CharField(max_length=512)
 
     class Meta:
         ordering = ["-id"]
@@ -22,7 +23,7 @@ class ThresholdConfig(models.Model):
         verbose_name_plural = "Threshold Configs"
 
     def __str__(self):
-        return "%.3f by %s" % (self.value, self.updated_by)
+        return "Block: %.3f, Flag: %.3f by %s" % (self.auto_block_threshold, self.flag_threshold, self.updated_by)
 
 
 class MLModel(models.Model):

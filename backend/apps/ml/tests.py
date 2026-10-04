@@ -64,7 +64,7 @@ class TestAnalystMLAccess:
 
     def test_cannot_add_threshold(self, analyst_client):
         res = analyst_client.post(THRESHOLD_ADD_URL, {
-            "value": 0.6, "rationale": "Analyst tweak"
+            "auto_block_threshold": 0.9, "flag_threshold": 0.6, "rationale": "Analyst tweak"
         })
         assert res.status_code == status.HTTP_403_FORBIDDEN
 
@@ -79,11 +79,12 @@ class TestAdminThresholdAccess:
 
     def test_admin_can_add_threshold(self, admin_client):
         res = admin_client.post(THRESHOLD_ADD_URL, {
-            "value":     0.7,
+            "auto_block_threshold": 0.9,
+            "flag_threshold":       0.7,
             "rationale": "Tightening flag threshold based on Q3 review.",
         })
         assert res.status_code == status.HTTP_201_CREATED
-        assert res.data["value"] == 0.7
+        assert res.data["flag_threshold"] == 0.7
 
     def test_admin_can_view_model_list(self, admin_client):
         res = admin_client.get(MODEL_LIST_URL)

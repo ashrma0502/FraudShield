@@ -8,7 +8,7 @@ class ThresholdConfigSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = ThresholdConfig
-        fields = ["id", "value", "updated_by_email", "rationale"]
+        fields = ["id", "auto_block_threshold", "flag_threshold", "updated_by_email", "rationale"]
         read_only_fields = ["id", "updated_by_email"]
 
 
