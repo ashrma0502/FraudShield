@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import filters, generics, permissions
 
 from apps.accounts.permissions import (
@@ -61,7 +62,7 @@ class MerchantTransactionListView(generics.ListAPIView):
     def get_queryset(self):
         try:
             profile = self.request.user.merchant_profile
-        except Exception:
+        except (AttributeError, ObjectDoesNotExist):
             return Transaction.objects.none()
         return Transaction.objects.filter(merchant=profile)
 

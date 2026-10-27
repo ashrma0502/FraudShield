@@ -1,4 +1,4 @@
-# Custom DRF permission classes — one per role, plus analyst-or-admin composite.
+"""Role-based permission classes for DRF views."""
 
 from rest_framework.permissions import BasePermission
 

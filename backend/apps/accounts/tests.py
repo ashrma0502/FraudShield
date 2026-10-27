@@ -7,7 +7,6 @@ from rest_framework import status
 
 from apps.accounts.models import MerchantProfile, User
 
-# ── Registration ──────────────────────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestCustomerRegistration:
@@ -86,8 +85,6 @@ class TestPrivilegedRegistration:
         assert res.status_code == status.HTTP_201_CREATED
 
 
-# ── Login / JWT ────────────────────────────────────────────────────────────────
-
 @pytest.mark.django_db
 class TestLogin:
     url = "/api/v1/accounts/token/"
@@ -120,8 +117,6 @@ class TestLogin:
         assert res.status_code == status.HTTP_401_UNAUTHORIZED
 
 
-# ── Profile (me/) ─────────────────────────────────────────────────────────────
-
 @pytest.mark.django_db
 class TestMeEndpoint:
     url = "/api/v1/accounts/me/"
@@ -138,6 +133,5 @@ class TestMeEndpoint:
     def test_role_is_read_only(self, customer_client):
         res = customer_client.patch(self.url, {"role": "admin"})
         assert res.status_code == status.HTTP_200_OK
-        # Role must not have changed
         from apps.accounts.models import User as U
         assert U.objects.get(username="customer1").role == User.Role.CUSTOMER

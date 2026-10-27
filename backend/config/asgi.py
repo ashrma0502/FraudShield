@@ -1,4 +1,4 @@
-# ASGI entry point for async servers (e.g. daphne, uvicorn).
+"""ASGI configuration for FraudShield."""
 import os
 
 from django.core.asgi import get_asgi_application

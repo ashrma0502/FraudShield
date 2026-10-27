@@ -13,8 +13,6 @@ QUEUE_URL  = "/api/v1/transactions/review-queue/"
 DECIDE_URL = "/api/v1/transactions/decide/"
 
 
-# ── Unauthenticated ───────────────────────────────────────────────────────────
-
 @pytest.mark.django_db
 class TestUnauthenticated:
     def test_submit_requires_auth(self, api_client):
@@ -29,8 +27,6 @@ class TestUnauthenticated:
     def test_decide_requires_auth(self, api_client):
         assert api_client.post(DECIDE_URL, {}).status_code == status.HTTP_401_UNAUTHORIZED
 
-
-# ── Customer ──────────────────────────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestCustomerPermissions:
@@ -54,7 +50,6 @@ class TestCustomerPermissions:
         assert customer_client.get(QUEUE_URL).status_code == status.HTTP_403_FORBIDDEN
 
     def test_customer_cannot_view_mine(self, customer_client):
-        # /mine/ is merchant-only
         assert customer_client.get(MINE_URL).status_code == status.HTTP_403_FORBIDDEN
 
     def test_customer_cannot_decide(self, customer_client, transaction):
@@ -63,8 +58,6 @@ class TestCustomerPermissions:
         })
         assert res.status_code == status.HTTP_403_FORBIDDEN
 
-
-# ── Merchant ──────────────────────────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestMerchantPermissions:
@@ -89,8 +82,6 @@ class TestMerchantPermissions:
         assert res.status_code == status.HTTP_403_FORBIDDEN
 
 
-# ── Analyst ───────────────────────────────────────────────────────────────────
-
 @pytest.mark.django_db
 class TestAnalystPermissions:
     def test_analyst_can_view_review_queue(self, analyst_client, transaction):
@@ -108,7 +99,6 @@ class TestAnalystPermissions:
             "decision":    "approved",
         })
         assert res.status_code == status.HTTP_201_CREATED
-        # Decision should mirror onto transaction status
         transaction.refresh_from_db()
         assert transaction.status == "approved"
 
@@ -132,8 +122,6 @@ class TestAnalystPermissions:
         })
         assert res.status_code == status.HTTP_400_BAD_REQUEST
 
-
-# ── Admin ─────────────────────────────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestAdminTransactionAccess:

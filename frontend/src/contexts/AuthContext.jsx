@@ -28,8 +28,7 @@ export const AuthProvider = ({ children }) => {
     const response = await api.post('/accounts/token/', { username, password });
     localStorage.setItem('access_token', response.data.access);
     localStorage.setItem('refresh_token', response.data.refresh);
-    
-    // Fetch user details immediately after
+
     const userRes = await api.get('/accounts/me/');
     setUser(userRes.data);
     return userRes.data;

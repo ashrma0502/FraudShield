@@ -1,4 +1,4 @@
-# Production overrides — DEBUG off, HTTPS enforced, SMTP email.
+"""Production settings: HTTPS enforcement and secure cookies."""
 
 from decouple import config
 

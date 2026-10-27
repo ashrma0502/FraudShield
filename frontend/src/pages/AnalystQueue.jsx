@@ -33,7 +33,6 @@ export default function AnalystQueue() {
         transaction: id,
         decision: decision
       });
-      // Remove from list
       setQueue(q => q.filter(tx => tx.id !== id));
       if (selectedTx?.id === id) setSelectedTx(null);
     } catch (error) {

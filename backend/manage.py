@@ -1,4 +1,4 @@
-# Django management script — use `python manage.py <command>`.
+"""Django management CLI."""
 import os
 import sys
 

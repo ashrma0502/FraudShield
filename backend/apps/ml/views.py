@@ -63,32 +63,16 @@ def predict(request):
             status=status.HTTP_503_SERVICE_UNAVAILABLE,
         )
 
-    try:
-        # Get latest threshold
-        threshold = ThresholdConfig.objects.first()
-        if not threshold:
-            # Fallback values if none exist in DB
-            block_t = 0.90
-            flag_t = 0.75
-        else:
-            block_t = threshold.auto_block_threshold
-            flag_t = threshold.flag_threshold
-    except Exception:
-        block_t = 0.90
-        flag_t = 0.75
+    threshold = ThresholdConfig.objects.first()
+    block_t = threshold.auto_block_threshold if threshold else 0.90
 
     t0          = time.time()
     clf         = joblib.load(active_model.model_file.path)
-    # Placeholder feature vector — replace with real feature engineering
     features    = [[data["amount"]]]
     fraud_score = float(clf.predict_proba(features)[0][1])
     latency_ms  = int((time.time() - t0) * 1000)
     
-    # We define 'is_fraud' as being above the block threshold for logging purposes
-    is_fraud    = fraud_score >= block_t
-    
-    # In a real system, you might also return a status (approve, review, decline)
-    # based on flag_t and block_t. For now we just keep the prediction log as is.
+    is_fraud = fraud_score >= block_t
 
     PredictionLog.objects.create(
         ml_model=active_model,

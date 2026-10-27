@@ -1,4 +1,4 @@
-# Root URL config — mounts all app routers under /api/v1/ and exposes docs.
+"""Root URL configuration for FraudShield."""
 
 from apps.accounts.views import health_check
 from django.conf import settings

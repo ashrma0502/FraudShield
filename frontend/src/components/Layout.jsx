@@ -13,7 +13,6 @@ export default function Layout({ allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Basic redirect if they don't have access
     return <Navigate to={user.role === 'merchant' ? '/merchant' : '/analyst'} replace />;
   }
 

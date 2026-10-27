@@ -22,7 +22,6 @@ export default function MerchantDashboard() {
     fetchTransactions();
   }, []);
 
-  // Stats
   const totalAmount = transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
   const approvedCount = transactions.filter(t => t.status === 'approved').length;
   const declinedCount = transactions.filter(t => t.status === 'declined').length;

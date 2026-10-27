@@ -1,23 +1,23 @@
 import os
+from datetime import timedelta
+
 import django
 from django.utils import timezone
-from datetime import timedelta
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
 django.setup()
 
-from apps.accounts.models import User, MerchantProfile
+from apps.accounts.models import MerchantProfile, User
 from apps.transactions.models import Transaction
 
+
 def seed():
-    # 1. Create Analyst
     analyst, _ = User.objects.get_or_create(username='analyst1', email='analyst@example.com', defaults={
         'role': User.Role.ANALYST
     })
     analyst.set_password('password123')
     analyst.save()
 
-    # 2. Create Merchant
     merchant_user, _ = User.objects.get_or_create(username='merchant1', email='merchant@example.com', defaults={
         'role': User.Role.MERCHANT
     })
@@ -28,14 +28,12 @@ def seed():
         'business_name': 'Acme Electronics'
     })
 
-    # 3. Create Customer
     customer, _ = User.objects.get_or_create(username='customer1', email='customer@example.com', defaults={
         'role': User.Role.CUSTOMER
     })
     customer.set_password('password123')
     customer.save()
 
-    # 4. Create Transactions
     if Transaction.objects.count() == 0:
         now = timezone.now()
         txs = [
@@ -81,7 +79,7 @@ def seed():
             ),
         ]
         Transaction.objects.bulk_create(txs)
-        print(f"Created {len(txs)} transactions.")
+        print("Created %d transactions." % len(txs))
 
 if __name__ == '__main__':
     seed()

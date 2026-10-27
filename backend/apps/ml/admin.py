@@ -1,8 +1,9 @@
-from django.contrib import admin
 from django import forms
+from django.contrib import admin
 from django.core.exceptions import ValidationError
 
 from .models import MLModel, PredictionLog, ThresholdConfig
+
 
 class ThresholdConfigForm(forms.ModelForm):
     class Meta:
@@ -19,9 +20,8 @@ class ThresholdConfigForm(forms.ModelForm):
         cleaned_data = super().clean()
         block = cleaned_data.get("auto_block_threshold")
         flag = cleaned_data.get("flag_threshold")
-        if block is not None and flag is not None:
-            if flag >= block:
-                raise ValidationError("Flag threshold must be strictly less than the auto-block threshold.")
+        if block is not None and flag is not None and flag >= block:
+            raise ValidationError("Flag threshold must be strictly less than the auto-block threshold.")
         return cleaned_data
 
 
@@ -32,7 +32,7 @@ class ThresholdConfigAdmin(admin.ModelAdmin):
     search_fields = ["rationale", "updated_by__email"]
 
     def save_model(self, request, obj, form, change):
-        # Even if change is somehow True (e.g., bypass), we force creating a new row
+        # Append-only: always insert a new record
         if change:
             obj.pk = None
         if not obj.updated_by_id:
@@ -40,7 +40,7 @@ class ThresholdConfigAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     def has_change_permission(self, request, obj=None):
-        # Enforce append-only in the admin interface
+        # Append-only: prevent in-place edits
         return False
 
     def has_delete_permission(self, request, obj=None):

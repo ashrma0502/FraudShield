@@ -9,8 +9,6 @@ THRESHOLD_ADD_URL  = "/api/v1/ml/thresholds/add/"
 MODEL_LIST_URL     = "/api/v1/ml/models/"
 
 
-# ── Unauthenticated ───────────────────────────────────────────────────────────
-
 @pytest.mark.django_db
 class TestUnauthenticated:
     def test_threshold_list_requires_auth(self, api_client):
@@ -22,8 +20,6 @@ class TestUnauthenticated:
     def test_model_list_requires_auth(self, api_client):
         assert api_client.get(MODEL_LIST_URL).status_code == status.HTTP_401_UNAUTHORIZED
 
-
-# ── Customer — denied from all ML endpoints ────────────────────────────────────
 
 @pytest.mark.django_db
 class TestCustomerMLAccess:
@@ -37,8 +33,6 @@ class TestCustomerMLAccess:
         assert customer_client.get(MODEL_LIST_URL).status_code == status.HTTP_403_FORBIDDEN
 
 
-# ── Merchant — denied from all ML endpoints ───────────────────────────────────
-
 @pytest.mark.django_db
 class TestMerchantMLAccess:
     def test_cannot_view_thresholds(self, merchant_client):
@@ -50,8 +44,6 @@ class TestMerchantMLAccess:
     def test_cannot_view_models(self, merchant_client):
         assert merchant_client.get(MODEL_LIST_URL).status_code == status.HTTP_403_FORBIDDEN
 
-
-# ── Analyst — can view models but cannot change thresholds ────────────────────
 
 @pytest.mark.django_db
 class TestAnalystMLAccess:
@@ -68,8 +60,6 @@ class TestAnalystMLAccess:
         })
         assert res.status_code == status.HTTP_403_FORBIDDEN
 
-
-# ── Admin — full access to thresholds ─────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestAdminThresholdAccess:
@@ -90,8 +80,6 @@ class TestAdminThresholdAccess:
         res = admin_client.get(MODEL_LIST_URL)
         assert res.status_code == status.HTTP_200_OK
 
-
-# ── Analytics permission boundary ─────────────────────────────────────────────
 
 @pytest.mark.django_db
 class TestAnalyticsPermissions:
