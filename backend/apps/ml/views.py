@@ -1,18 +1,16 @@
-import time
-
-import joblib
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from apps.accounts.permissions import IsAdmin, IsAnalystOrAdmin
 
-from .models import MLModel, PredictionLog, ThresholdConfig
+from .models import MLModel, ThresholdConfig
 from .serializers import (
     MLModelSerializer,
     PredictionRequestSerializer,
     ThresholdConfigSerializer,
 )
+from .services import screen_transaction
 
 
 class MLModelListView(generics.ListAPIView):
@@ -46,47 +44,13 @@ class ThresholdConfigCreateView(generics.CreateAPIView):
 
 
 @api_view(["POST"])
-@permission_classes([permissions.IsAuthenticated, IsAdmin])
+@permission_classes([permissions.IsAuthenticated])
 def predict(request):
-    """Run the active ML model on a transaction and return a fraud score."""
+    """Run rule-based pre-filter and trained classifier for real-time fraud inference."""
     serializer = PredictionRequestSerializer(data=request.data)
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     data = serializer.validated_data
-
-    try:
-        active_model = MLModel.objects.get(is_active=True)
-    except MLModel.DoesNotExist:
-        return Response(
-            {"detail": "No active model. Train and activate one first."},
-            status=status.HTTP_503_SERVICE_UNAVAILABLE,
-        )
-
-    threshold = ThresholdConfig.objects.first()
-    block_t = threshold.auto_block_threshold if threshold else 0.90
-
-    t0          = time.time()
-    clf         = joblib.load(active_model.model_file.path)
-    features    = [[data["amount"]]]
-    fraud_score = float(clf.predict_proba(features)[0][1])
-    latency_ms  = int((time.time() - t0) * 1000)
-    
-    is_fraud = fraud_score >= block_t
-
-    PredictionLog.objects.create(
-        ml_model=active_model,
-        transaction_id=data["transaction_id"],
-        input_features=data,
-        fraud_score=fraud_score,
-        is_fraud=is_fraud,
-        latency_ms=latency_ms,
-    )
-
-    return Response({
-        "transaction_id": data["transaction_id"],
-        "fraud_score":    round(fraud_score, 4),
-        "is_fraud":       is_fraud,
-        "latency_ms":     latency_ms,
-        "model":          "%s v%s" % (active_model.name, active_model.version),
-    })
+    result = screen_transaction(data, customer=request.user)
+    return Response(result, status=status.HTTP_200_OK)

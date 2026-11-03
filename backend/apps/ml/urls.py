@@ -10,4 +10,5 @@ urlpatterns = [
     path("thresholds/", views.ThresholdConfigListView.as_view(), name="threshold-list"),
     path("thresholds/add/", views.ThresholdConfigCreateView.as_view(), name="threshold-add"),
     path("predict/", views.predict, name="predict"),
+    path("screen/", views.predict, name="screen"),
 ]

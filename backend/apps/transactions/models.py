@@ -17,6 +17,11 @@ class Transaction(models.Model):
         NONE  = "none",  "None"
         RULE  = "rule",  "Rule Engine"
         MODEL = "model", "ML Model"
+        BOTH  = "both",  "Both (Rules & Model)"
+
+    class Source(models.TextChoices):
+        LIVE   = "live",   "Live"
+        REPLAY = "replay", "Replay"
 
     id               = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     customer         = models.ForeignKey(
@@ -34,6 +39,9 @@ class Transaction(models.Model):
     fraud_score      = models.FloatField(null=True, blank=True)
     status           = models.CharField(max_length=16, choices=Status.choices, default=Status.PENDING)
     flagged_by       = models.CharField(max_length=8, choices=FlaggedBy.choices, default=FlaggedBy.NONE)
+    source           = models.CharField(
+        max_length=16, choices=Source.choices, null=True, blank=True, db_index=True
+    )
     model_version    = models.CharField(max_length=64, blank=True)
     feature_snapshot = models.JSONField(null=True, blank=True)
 

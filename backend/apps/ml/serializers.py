@@ -29,7 +29,14 @@ class PredictionLogSerializer(serializers.ModelSerializer):
 
 
 class PredictionRequestSerializer(serializers.Serializer):
-    """Input schema for the real-time prediction endpoint."""
-    transaction_id = serializers.UUIDField()
-    amount         = serializers.FloatField()
-    submitted_at   = serializers.DateTimeField()
+    """Input schema for the real-time prediction and screening endpoint."""
+    transaction_id   = serializers.UUIDField(required=False)
+    amount           = serializers.FloatField(min_value=0.0)
+    submitted_at     = serializers.DateTimeField(required=False)
+    customer_id      = serializers.CharField(required=False, allow_null=True)
+    product_cd       = serializers.CharField(required=False, default="W", max_length=16)
+    card4            = serializers.CharField(required=False, default="visa", max_length=32)
+    card6            = serializers.CharField(required=False, default="credit", max_length=32)
+    p_emaildomain    = serializers.CharField(required=False, default="gmail.com", max_length=64)
+    r_emaildomain    = serializers.CharField(required=False, default="gmail.com", max_length=64)
+    feature_snapshot = serializers.DictField(required=False, default=dict)
