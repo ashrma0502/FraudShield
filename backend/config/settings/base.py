@@ -1,14 +1,21 @@
 """Base settings shared across development and production environments."""
 
+import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
 from decouple import Csv, config
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+REPO_DIR = BASE_DIR.parent
+if str(REPO_DIR) not in sys.path:
+    sys.path.insert(0, str(REPO_DIR))
+
+ML_MODEL_PATH = Path(config("ML_MODEL_PATH", default=str(BASE_DIR / "ml_models" / "ieee_cis_rf.joblib")))
 
 SECRET_KEY = config("SECRET_KEY")
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1,.vercel.app", cast=Csv())
 
 DJANGO_APPS = [
     "django.contrib.admin",
@@ -32,6 +39,7 @@ LOCAL_APPS = [
     "apps.transactions",
     "apps.ml",
     "apps.analytics",
+    "apps.notifications",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -69,16 +77,67 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": config("DB_NAME", default="fraudshield"),
-        "USER": config("DB_USER", default="fraudshield_user"),
-        "PASSWORD": config("DB_PASSWORD", default="fraudshield_pass"),
-        "HOST": config("DB_HOST", default="localhost"),
-        "PORT": config("DB_PORT", default="5432"),
+is_testing = (
+    "test" in sys.argv
+    or "pytest" in sys.modules
+    or any("pytest" in a for a in sys.argv)
+    or "PYTEST_CURRENT_TEST" in os.environ
+)
+
+db_url = config("DATABASE_URL", default=None)
+is_placeholder_url = bool(
+    db_url
+    and any(
+        p in db_url
+        for p in ["YOUR_PASSWORD", "placeholder", "dummy", "replace-with-password"]
+    )
+)
+
+if is_testing and not config("FORCE_REMOTE_TEST_DB", default=False, cast=bool):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": ":memory:",
+        }
     }
-}
+elif db_url and not is_placeholder_url:
+    from urllib.parse import parse_qs, unquote, urlparse
+
+    parsed_url = urlparse(db_url)
+    qs = parse_qs(parsed_url.query)
+
+    db_engine = "django.db.backends.postgresql"
+    if parsed_url.scheme in ["sqlite", "sqlite3"]:
+        db_engine = "django.db.backends.sqlite3"
+
+    db_cfg = {
+        "ENGINE": db_engine,
+        "NAME": parsed_url.path.lstrip("/"),
+        "USER": unquote(parsed_url.username or ""),
+        "PASSWORD": unquote(parsed_url.password or ""),
+        "HOST": parsed_url.hostname or "",
+        "PORT": str(parsed_url.port or "5432"),
+        "CONN_MAX_AGE": config("CONN_MAX_AGE", default=0, cast=int),
+    }
+
+    # Neon and cloud postgres require sslmode=require
+    ssl_mode = qs.get("sslmode", [None])[0]
+    if ssl_mode:
+        db_cfg["OPTIONS"] = {"sslmode": ssl_mode}
+
+    DATABASES = {"default": db_cfg}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": config("DB_NAME", default="fraudshield"),
+            "USER": config("DB_USER", default="fraudshield_user"),
+            "PASSWORD": config("DB_PASSWORD", default="fraudshield_pass"),
+            "HOST": config("DB_HOST", default="localhost"),
+            "PORT": config("DB_PORT", default="5432"),
+            "CONN_MAX_AGE": config("CONN_MAX_AGE", default=0, cast=int),
+        }
+    }
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -135,3 +194,6 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
+
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="alerts@fraudshield.internal")
+DEFAULT_ANALYST_EMAIL = config("DEFAULT_ANALYST_EMAIL", default="analyst@example.com")

@@ -1,7 +1,6 @@
-import React from 'react';
 import { Outlet, Navigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Shield, LayoutDashboard, LogOut, CheckSquare } from 'lucide-react';
+import { Shield, LayoutDashboard, LogOut, CheckSquare, CreditCard, TrendingUp } from 'lucide-react';
 import { cn } from '../utils';
 
 export default function Layout({ allowedRoles }) {
@@ -13,14 +12,27 @@ export default function Layout({ allowedRoles }) {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to={user.role === 'merchant' ? '/merchant' : '/analyst'} replace />;
+    if (user.role === 'customer') {
+      return <Navigate to="/simulate" replace />;
+    }
+    if (user.role === 'admin') {
+      return <Navigate to="/model-performance" replace />;
+    }
+    if (user.role === 'analyst') {
+      return <Navigate to="/dashboard" replace />;
+    }
+    if (user.role === 'merchant') {
+      return <Navigate to="/dashboard" replace />;
+    }
+    return <Navigate to="/login" replace />;
   }
 
   const navigation = [
-    { name: 'Dashboard', href: '/merchant', icon: LayoutDashboard, role: 'merchant' },
-    { name: 'Review Queue', href: '/analyst', icon: CheckSquare, role: 'analyst' },
-    { name: 'Review Queue', href: '/analyst', icon: CheckSquare, role: 'admin' },
-  ].filter(item => item.role === user.role);
+    { name: 'Payment Simulator', href: '/simulate', icon: CreditCard, roles: ['customer'] },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['analyst', 'merchant'] },
+    { name: 'Review Queue', href: '/analyst', icon: CheckSquare, roles: ['analyst'] },
+    { name: 'Model Performance', href: '/model-performance', icon: TrendingUp, roles: ['admin'] },
+  ].filter(item => item.roles.includes(user.role));
 
   return (
     <div className="min-h-screen bg-dark-900 flex">

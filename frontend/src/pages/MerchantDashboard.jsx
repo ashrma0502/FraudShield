@@ -1,34 +1,70 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { CreditCard, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, XCircle, Search } from 'lucide-react';
+import { CreditCard, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, XCircle, ArrowRight, ShieldCheck } from 'lucide-react';
 import api from '../api';
-import { formatCurrency, cn } from '../utils';
+import { useAuth } from '../contexts/AuthContext';
+import { formatCurrency } from '../utils';
 
 export default function MerchantDashboard() {
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const isAnalyst = user?.role === 'analyst';
+
   useEffect(() => {
-    const fetchTransactions = async () => {
+    let isMounted = true;
+    const fetchData = async () => {
       try {
-        const response = await api.get('/transactions/mine/');
-        setTransactions(response.data.results || []);
+        if (isAnalyst) {
+          const [sumRes, queueRes] = await Promise.all([
+            api.get('/analytics/summary/'),
+            api.get('/transactions/review-queue/'),
+          ]);
+          if (isMounted) {
+            setSummary(sumRes.data);
+            setTransactions(queueRes.data.results || []);
+          }
+        } else {
+          const response = await api.get('/transactions/mine/');
+          if (isMounted) {
+            setTransactions(response.data.results || []);
+          }
+        }
       } catch (error) {
-        console.error("Failed to fetch transactions", error);
+        console.error("Failed to fetch dashboard data", error);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
-    fetchTransactions();
-  }, []);
+    fetchData();
+    return () => {
+      isMounted = false;
+    };
+  }, [isAnalyst]);
 
-  const totalAmount = transactions.reduce((sum, t) => sum + parseFloat(t.amount), 0);
-  const approvedCount = transactions.filter(t => t.status === 'approved').length;
-  const declinedCount = transactions.filter(t => t.status === 'declined').length;
-  const pendingCount = transactions.filter(t => ['pending', 'under_review'].includes(t.status)).length;
+  const totalAmount = isAnalyst
+    ? parseFloat(summary?.total_amount || 0)
+    : transactions.reduce((sum, t) => sum + parseFloat(t.amount || 0), 0);
+
+  const approvedCount = isAnalyst
+    ? Math.max(0, (summary?.total_transactions || 0) - (summary?.declined_count || 0) - (summary?.under_review_count || 0))
+    : transactions.filter(t => t.status === 'approved').length;
+
+  const declinedCount = isAnalyst
+    ? (summary?.declined_count || 0)
+    : transactions.filter(t => t.status === 'declined').length;
+
+  const pendingCount = isAnalyst
+    ? (summary?.under_review_count || 0)
+    : transactions.filter(t => ['pending', 'under_review'].includes(t.status)).length;
 
   const getStatusBadge = (status) => {
-    switch(status) {
+    switch (status) {
       case 'approved':
         return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"><CheckCircle2 className="w-3 h-3 mr-1" /> Approved</span>;
       case 'declined':
@@ -38,21 +74,40 @@ export default function MerchantDashboard() {
     }
   };
 
+  const getRiskBadge = (score) => {
+    const num = parseFloat(score || 0);
+    if (num >= 0.8) {
+      return <span className="text-xs px-2 py-0.5 rounded font-mono font-bold bg-red-500/20 text-red-400 border border-red-500/30">{(num * 100).toFixed(0)}%</span>;
+    }
+    if (num >= 0.5) {
+      return <span className="text-xs px-2 py-0.5 rounded font-mono font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">{(num * 100).toFixed(0)}%</span>;
+    }
+    return <span className="text-xs px-2 py-0.5 rounded font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">{(num * 100).toFixed(0)}%</span>;
+  };
+
   if (loading) {
-    return <div className="animate-pulse-slow h-full flex flex-col space-y-6">
-      <div className="h-10 w-48 bg-dark-700 rounded-lg"></div>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {[1,2,3,4].map(i => <div key={i} className="h-32 bg-dark-700 rounded-2xl"></div>)}
+    return (
+      <div className="animate-pulse-slow h-full flex flex-col space-y-6">
+        <div className="h-10 w-48 bg-dark-700 rounded-lg"></div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-32 bg-dark-700 rounded-2xl"></div>)}
+        </div>
+        <div className="h-96 bg-dark-700 rounded-2xl"></div>
       </div>
-      <div className="h-96 bg-dark-700 rounded-2xl"></div>
-    </div>;
+    );
   }
 
   return (
     <div className="animate-fade-in space-y-8">
       <div>
-        <h1 className="text-3xl font-display font-bold text-white mb-2">Transactions</h1>
-        <p className="text-gray-400">Overview of your recent payment activity</p>
+        <h1 className="text-3xl font-display font-bold text-white mb-2">
+          {isAnalyst ? 'Fraud Operations Dashboard' : 'Merchant Dashboard'}
+        </h1>
+        <p className="text-gray-400">
+          {isAnalyst
+            ? 'Real-time overview of system transactions, fraud volume, and review queue'
+            : 'Overview of your recent payment activity'}
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -101,7 +156,23 @@ export default function MerchantDashboard() {
       {/* Transactions Table */}
       <div className="glass-card overflow-hidden">
         <div className="p-6 border-b border-white/5 flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-white">Recent Transactions</h2>
+          <div>
+            <h2 className="text-lg font-semibold text-white">
+              {isAnalyst ? 'Flagged Transactions Pending Review' : 'Recent Transactions'}
+            </h2>
+            {isAnalyst && (
+              <p className="text-xs text-gray-400 mt-0.5">Transactions awaiting analyst verification</p>
+            )}
+          </div>
+          {isAnalyst && (
+            <Link
+              to="/analyst"
+              className="inline-flex items-center text-xs font-semibold text-brand-400 hover:text-brand-300 transition-colors"
+            >
+              Open Full Review Queue
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Link>
+          )}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -110,7 +181,13 @@ export default function MerchantDashboard() {
                 <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Transaction ID</th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>
                 <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Amount</th>
+                {isAnalyst && (
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Risk Score</th>
+                )}
                 <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
+                {isAnalyst && (
+                  <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">Action</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -127,15 +204,32 @@ export default function MerchantDashboard() {
                   <td className="px-6 py-4">
                     <span className="text-sm font-medium text-white">{formatCurrency(tx.amount)}</span>
                   </td>
+                  {isAnalyst && (
+                    <td className="px-6 py-4">
+                      {getRiskBadge(tx.fraud_score)}
+                    </td>
+                  )}
                   <td className="px-6 py-4">
                     {getStatusBadge(tx.status)}
                   </td>
+                  {isAnalyst && (
+                    <td className="px-6 py-4 text-right">
+                      <Link
+                        to="/analyst"
+                        className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-medium bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 transition-colors"
+                      >
+                        Review
+                        <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                      </Link>
+                    </td>
+                  )}
                 </tr>
               ))}
               {transactions.length === 0 && (
                 <tr>
-                  <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
-                    No transactions found.
+                  <td colSpan={isAnalyst ? 6 : 4} className="px-6 py-12 text-center text-gray-500">
+                    <ShieldCheck className="w-8 h-8 mx-auto mb-2 text-gray-600" />
+                    {isAnalyst ? 'No transactions pending review in the queue.' : 'No transactions found.'}
                   </td>
                 </tr>
               )}

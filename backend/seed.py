@@ -81,6 +81,28 @@ def seed():
         Transaction.objects.bulk_create(txs)
         print("Created %d transactions." % len(txs))
 
+    from apps.ml.models import MLModel, ThresholdConfig
+    if ThresholdConfig.objects.count() == 0:
+        ThresholdConfig.objects.create(
+            updated_by=analyst,
+            flag_threshold=0.50,
+            auto_block_threshold=0.90,
+            rationale="Initial baseline production thresholds: flag at 0.50, auto-block at 0.90",
+        )
+        print("Created baseline ThresholdConfig (flag: 0.50, block: 0.90).")
+
+    if MLModel.objects.count() == 0:
+        MLModel.objects.create(
+            name="IEEE-CIS Random Forest",
+            version="1.0.0",
+            algorithm=MLModel.Algorithm.RANDOM_FOREST,
+            description="Production serialized Random Forest classifier on IEEE-CIS transaction features.",
+            model_file="ml_models/ieee_cis_rf.joblib",
+            is_active=True,
+            metrics={"f1": 0.74, "auc_roc": 0.88, "precision": 0.82, "recall": 0.67},
+        )
+        print("Created active MLModel entry for IEEE-CIS Random Forest.")
+
 if __name__ == '__main__':
     seed()
     print("Database seeded successfully. You can login with analyst1 / password123 or merchant1 / password123")

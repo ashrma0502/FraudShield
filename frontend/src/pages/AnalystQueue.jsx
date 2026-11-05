@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { ShieldAlert, CheckCircle2, XCircle, AlertTriangle, ChevronRight, Activity } from 'lucide-react';
+import { ShieldAlert, CheckCircle2, XCircle, Activity } from 'lucide-react';
 import api from '../api';
 import { formatCurrency, cn } from '../utils';
 
@@ -10,13 +10,8 @@ export default function AnalystQueue() {
   const [selectedTx, setSelectedTx] = useState(null);
   const [processingId, setProcessingId] = useState(null);
 
-  useEffect(() => {
-    fetchQueue();
-  }, []);
-
   const fetchQueue = async () => {
     try {
-      setLoading(true);
       const response = await api.get('/transactions/review-queue/');
       setQueue(response.data.results || []);
     } catch (error) {
@@ -25,6 +20,23 @@ export default function AnalystQueue() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let isMounted = true;
+    api.get('/transactions/review-queue/')
+      .then((res) => {
+        if (isMounted) setQueue(res.data.results || []);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch review queue", err);
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleDecision = async (id, decision) => {
     setProcessingId(id);

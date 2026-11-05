@@ -8,6 +8,7 @@ from rest_framework import status
 from apps.transactions.models import Transaction
 
 SUBMIT_URL = "/api/v1/transactions/submit/"
+SIMULATE_URL = "/api/v1/transactions/simulate/"
 MINE_URL   = "/api/v1/transactions/mine/"
 QUEUE_URL  = "/api/v1/transactions/review-queue/"
 DECIDE_URL = "/api/v1/transactions/decide/"
@@ -132,3 +133,68 @@ class TestAdminTransactionAccess:
     def test_admin_can_view_transaction_detail(self, admin_client, transaction):
         res = admin_client.get("/api/v1/transactions/%s/" % transaction.id)
         assert res.status_code == status.HTTP_200_OK
+
+
+@pytest.mark.django_db
+class TestTransactionSimulation:
+    def test_simulation_options_metadata(self, api_client):
+        res = api_client.get(SIMULATE_URL)
+        assert res.status_code == status.HTTP_200_OK
+        assert "merchants" in res.data
+        assert "thresholds" in res.data
+        assert "presets" in res.data
+        assert len(res.data["presets"]) > 0
+
+    def test_simulate_approved_legitimate_transaction(self, api_client):
+        payload = {
+            "amount": "14.50",
+            "card4": "visa",
+            "card6": "debit",
+            "product_cd": "W",
+            "p_emaildomain": "gmail.com",
+            "r_emaildomain": "gmail.com",
+        }
+        res = api_client.post(SIMULATE_URL, payload, format="json")
+        assert res.status_code == status.HTTP_201_CREATED
+        assert res.data["outcome"] == "approved"
+        assert res.data["status"] == "approved"
+        assert res.data["fraud_score"] < 0.75
+
+        txn = Transaction.objects.filter(id=res.data["transaction_id"]).first()
+        assert txn is not None
+        assert txn.status == Transaction.Status.APPROVED
+        assert txn.amount == 14.50
+
+    def test_simulate_declined_high_amount_rule(self, api_client):
+        payload = {
+            "amount": "7500.00",
+            "card4": "visa",
+            "card6": "credit",
+            "product_cd": "W",
+        }
+        res = api_client.post(SIMULATE_URL, payload, format="json")
+        assert res.status_code == status.HTTP_201_CREATED
+        assert res.data["outcome"] == "declined"
+        assert res.data["status"] == "declined"
+        assert res.data["fraud_score"] >= 0.90
+        assert res.data["rule_flagged"] is True
+        assert "high_amount" in res.data["triggered_rules"]
+
+        txn = Transaction.objects.filter(id=res.data["transaction_id"]).first()
+        assert txn is not None
+        assert txn.status == Transaction.Status.DECLINED
+
+    def test_simulate_with_authenticated_customer(self, customer_client, customer):
+        payload = {
+            "amount": "25.00",
+            "card4": "mastercard",
+            "card6": "debit",
+        }
+        res = customer_client.post(SIMULATE_URL, payload, format="json")
+        assert res.status_code == status.HTTP_201_CREATED
+        assert res.data["customer"] == customer.username
+
+        txn = Transaction.objects.filter(id=res.data["transaction_id"]).first()
+        assert txn is not None
+        assert txn.customer == customer
+

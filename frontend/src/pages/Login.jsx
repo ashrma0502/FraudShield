@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Shield, Loader2, ArrowRight } from 'lucide-react';
@@ -21,15 +21,26 @@ export default function Login() {
     
     try {
       const user = await login(username, password);
-      // Redirect based on role if no specific destination
-      if (from === '/') {
-        if (user.role === 'merchant') navigate('/merchant', { replace: true });
-        else if (user.role === 'analyst' || user.role === 'admin') navigate('/analyst', { replace: true });
-        else navigate('/', { replace: true });
-      } else {
+      // Redirect based on role
+      const roleAllowedPaths = {
+        admin: ['/model-performance'],
+        analyst: ['/dashboard', '/merchant', '/analyst'],
+        merchant: ['/dashboard', '/merchant'],
+        customer: ['/simulate'],
+      };
+      const allowed = roleAllowedPaths[user.role] || [];
+      const isFromAllowed = from !== '/' && from !== '/login' && allowed.includes(from);
+
+      if (isFromAllowed) {
         navigate(from, { replace: true });
+      } else if (user.role === 'admin') {
+        navigate('/model-performance', { replace: true });
+      } else if (user.role === 'customer') {
+        navigate('/simulate', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
       }
-    } catch (err) {
+    } catch {
       setError('Invalid username or password');
     } finally {
       setLoading(false);

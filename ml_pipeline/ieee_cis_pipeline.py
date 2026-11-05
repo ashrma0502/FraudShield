@@ -190,7 +190,13 @@ def load_and_join_ieee_cis(data_dir, sample_size=None):
         )
 
     print("  Loading %s …" % txn_path.name)
-    txn = pd.read_csv(txn_path)
+    if sample_size and sample_size < 590540:
+        skip_count = max(0, 590540 - sample_size)
+        print("  Sampling %d rows chronologically for accelerated training …" % sample_size)
+        txn = pd.read_csv(txn_path, skiprows=range(1, skip_count + 1))
+    else:
+        txn = pd.read_csv(txn_path)
+
     print("  Loading %s …" % idn_path.name)
     idn = pd.read_csv(idn_path)
 
@@ -199,8 +205,6 @@ def load_and_join_ieee_cis(data_dir, sample_size=None):
     print("  Joined dataset shape: %s" % str(merged.shape))
 
     if sample_size and sample_size < len(merged):
-        # Sort by TransactionDT to preserve chronological order during sampling
-        print("  Sampling %d rows chronologically for accelerated training …" % sample_size)
         merged = merged.sort_values("TransactionDT").tail(sample_size).reset_index(drop=True)
 
     return merged
