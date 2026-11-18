@@ -4,7 +4,7 @@ This document records architectural decisions, database schema migrations, pipel
 
 ---
 
-## [2026-10-31] — Schema Revision & Offline Retraining Isolation
+## Schema Revision & Offline Retraining Isolation
 
 ### 1. Context & Motivation
 Held-out test benchmark data from the IEEE-CIS test split was previously submitted through the simulation endpoint (`/api/v1/transactions/simulate/`) for validation and demonstration. To ensure complete scientific validity during model retraining on live production data (Y), replayed benchmark rows must never contaminate analyst-labeled training data.
