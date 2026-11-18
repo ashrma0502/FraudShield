@@ -17,6 +17,11 @@ class ThresholdConfig(models.Model):
     flag_threshold       = models.FloatField(default=0.75, help_text="Scores above this are flagged for manual review")
     rationale            = models.CharField(max_length=512)
 
+    @property
+    def value(self):
+        """Compatibility property matching ER diagram attribute."""
+        return self.flag_threshold
+
     class Meta:
         ordering = ["-id"]
         verbose_name = "Threshold Config"

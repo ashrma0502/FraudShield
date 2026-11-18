@@ -3,6 +3,7 @@
 from .base import *
 
 DEBUG = False
+ALLOWED_HOSTS = ["*"]
 
 # Use fast in-memory SQLite database for automated test suite so tests do not
 # attempt to execute CREATE DATABASE on remote managed databases like Neon.
