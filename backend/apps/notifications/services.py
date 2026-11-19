@@ -54,11 +54,14 @@ def get_analyst_recipients():
     ).exclude(email="")
 
     recipients = [u.email for u in analysts if u.email]
-    if not recipients:
-        fallback = getattr(settings, "DEFAULT_ANALYST_EMAIL", "analyst@example.com")
-        recipients = [fallback]
+    fallback = getattr(settings, "DEFAULT_ANALYST_EMAIL", None)
+    if fallback and fallback not in recipients:
+        recipients.append(fallback)
 
-    return recipients
+    if not recipients:
+        recipients = ["analyst@example.com"]
+
+    return list(dict.fromkeys(recipients))
 
 
 def notify_analysts_transaction_review(transaction, urgency=None, min_urgency=NotificationLog.Urgency.HIGH):
