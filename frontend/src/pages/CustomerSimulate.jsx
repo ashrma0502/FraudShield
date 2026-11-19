@@ -282,7 +282,7 @@ export default function CustomerSimulate() {
               </div>
 
               {/* Product Code */}
-              <div>
+              <div className="sm:col-span-2">
                 <label className="block text-xs font-medium uppercase tracking-wider text-gray-300 mb-2">
                   Product Category (ProductCD)
                 </label>
@@ -299,7 +299,7 @@ export default function CustomerSimulate() {
                 </select>
               </div>
 
-              {/* Email Domain */}
+              {/* Purchaser Email Domain */}
               <div>
                 <label className="block text-xs font-medium uppercase tracking-wider text-gray-300 mb-2">
                   Purchaser Email Domain
@@ -307,6 +307,24 @@ export default function CustomerSimulate() {
                 <select
                   value={pEmail}
                   onChange={(e) => setPEmail(e.target.value)}
+                  className="w-full px-4 py-3 glass-input text-white bg-dark-900/80"
+                >
+                  <option value="gmail.com" className="bg-dark-800">gmail.com</option>
+                  <option value="yahoo.com" className="bg-dark-800">yahoo.com</option>
+                  <option value="hotmail.com" className="bg-dark-800">hotmail.com</option>
+                  <option value="protonmail.com" className="bg-dark-800">protonmail.com (High-Risk)</option>
+                  <option value="anonymous.com" className="bg-dark-800">anonymous.com (High-Risk)</option>
+                </select>
+              </div>
+
+              {/* Recipient Email Domain */}
+              <div>
+                <label className="block text-xs font-medium uppercase tracking-wider text-gray-300 mb-2">
+                  Recipient Email Domain
+                </label>
+                <select
+                  value={rEmail}
+                  onChange={(e) => setREmail(e.target.value)}
                   className="w-full px-4 py-3 glass-input text-white bg-dark-900/80"
                 >
                   <option value="gmail.com" className="bg-dark-800">gmail.com</option>

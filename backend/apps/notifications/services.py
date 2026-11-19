@@ -161,7 +161,7 @@ def notify_analysts_transaction_review(transaction, urgency=None, min_urgency=No
     }
 
 
-def evaluate_and_notify_transaction(transaction, min_urgency=NotificationLog.Urgency.HIGH):
+def evaluate_and_notify_transaction(transaction, min_urgency=NotificationLog.Urgency.MEDIUM):
     """Convenience trigger point: alerts analysts if transaction is under review and meets urgency."""
     from apps.transactions.models import Transaction
 

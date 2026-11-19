@@ -155,11 +155,11 @@ class TransactionSimulateView(APIView):
             {
                 "name": "Medium-Risk Electronics ($1,499.99)",
                 "amount": 1499.99,
-                "card4": "mastercard",
+                "card4": "discover",
                 "card6": "credit",
                 "product_cd": "C",
                 "p_emaildomain": "yahoo.com",
-                "r_emaildomain": "gmail.com",
+                "r_emaildomain": "protonmail.com",
             },
         ]
 
