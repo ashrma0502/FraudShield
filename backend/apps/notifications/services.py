@@ -108,8 +108,7 @@ def notify_analysts_transaction_review(transaction, urgency=None, min_urgency=No
         "Customer       : %s\n"
         "Submitted At   : %s\n\n"
         "Action Required:\n"
-        "Please inspect the transaction in the Fraud Analyst Queue:\n"
-        "http://localhost:5173/analyst\n\n"
+        "Please inspect the transaction in the Fraud Analyst Queue.\n\n"
         "FraudShield Automated Notification System\n"
     ) % (
         transaction.id,
