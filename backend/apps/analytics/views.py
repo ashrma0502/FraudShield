@@ -8,8 +8,6 @@ from rest_framework import generics, permissions
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
-logger = logging.getLogger(__name__)
-
 from apps.accounts.permissions import IsAnalystOrAdmin
 from apps.ml.models import ThresholdConfig
 from apps.transactions.models import Transaction
@@ -17,6 +15,7 @@ from apps.transactions.models import Transaction
 from .models import DailyStats
 from .serializers import DailyStatsSerializer
 
+logger = logging.getLogger(__name__)
 
 class DailyStatsListView(generics.ListAPIView):
     """Paginated list of pre-aggregated daily stats (analyst/admin only)."""

@@ -108,7 +108,7 @@ class SparkovPreprocessor:
         self.merchant_freq = m_counts
         feat["merchant_freq"] = feat["_merchant_clean"].map(m_counts).fillna(0.0)
 
-        feat.drop(columns=["_merchant_clean"], inplace=True)
+        feat = feat.drop(columns=["_merchant_clean"])
         self.feature_names = list(feat.columns)
 
         X_imputed = self.imputer.fit_transform(feat.values)
@@ -125,7 +125,7 @@ class SparkovPreprocessor:
         feat = self.engineer_features(df_test)
 
         feat["merchant_freq"] = feat["_merchant_clean"].map(self.merchant_freq).fillna(0.0)
-        feat.drop(columns=["_merchant_clean"], inplace=True)
+        feat = feat.drop(columns=["_merchant_clean"])
 
         feat = feat.reindex(columns=self.feature_names, fill_value=0.0)
 

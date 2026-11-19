@@ -2,37 +2,31 @@
 # Production and local build script for FraudShield backend
 set -e
 
-# Detect Python binary: prefer active virtualenv, or existing backend/venv, or system python3
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Detect Python binary: prefer active virtualenv, local backend/venv, or system python3
 if [ -n "$VIRTUAL_ENV" ] && [ -f "$VIRTUAL_ENV/bin/python3" ]; then
   PYTHON="$VIRTUAL_ENV/bin/python3"
   PIP="$VIRTUAL_ENV/bin/pip"
-elif [ -f "backend/venv/bin/python3" ]; then
-  PYTHON="backend/venv/bin/python3"
-  PIP="backend/venv/bin/pip"
-elif [ -f "venv/bin/python3" ]; then
-  PYTHON="venv/bin/python3"
-  PIP="venv/bin/pip"
+elif [ -f "$SCRIPT_DIR/venv/bin/python3" ]; then
+  PYTHON="$SCRIPT_DIR/venv/bin/python3"
+  PIP="$SCRIPT_DIR/venv/bin/pip"
+elif [ -f "$SCRIPT_DIR/../venv/bin/python3" ]; then
+  PYTHON="$SCRIPT_DIR/../venv/bin/python3"
+  PIP="$SCRIPT_DIR/../venv/bin/pip"
 else
   PYTHON="python3"
   PIP="python3 -m pip"
 fi
 
-# Locate requirements.txt and manage.py whether run from repo root or backend/
-REQ_FILE="requirements.txt"
-if [ ! -f "$REQ_FILE" ] && [ -f "backend/requirements.txt" ]; then
-  REQ_FILE="backend/requirements.txt"
-fi
-
-MANAGE_PY="manage.py"
-if [ ! -f "$MANAGE_PY" ] && [ -f "backend/manage.py" ]; then
-  MANAGE_PY="backend/manage.py"
-fi
+REQ_FILE="$SCRIPT_DIR/requirements.txt"
+MANAGE_PY="$SCRIPT_DIR/manage.py"
 
 echo "==> Using Python: $($PYTHON --version) ($PYTHON)"
 echo "==> Installing Python dependencies..."
 
 PIP_FLAGS=""
-if [ "$PYTHON" = "python3" ]; then
+if [ -z "$VIRTUAL_ENV" ] && [ "$PYTHON" = "python3" ]; then
   if $PIP install --help 2>&1 | grep -q -- '--break-system-packages'; then
     PIP_FLAGS="--break-system-packages"
   fi

@@ -147,7 +147,7 @@ class IEEECISPreprocessor:
         feat["p_domain_freq"] = feat["_p_domain_raw"].map(p_counts).fillna(0.0)
         feat["r_domain_freq"] = feat["_r_domain_raw"].map(r_counts).fillna(0.0)
 
-        feat.drop(columns=["_p_domain_raw", "_r_domain_raw"], inplace=True)
+        feat = feat.drop(columns=["_p_domain_raw", "_r_domain_raw"])
 
         self.feature_names = list(feat.columns)
 
@@ -167,7 +167,7 @@ class IEEECISPreprocessor:
         feat["p_domain_freq"] = feat["_p_domain_raw"].map(self.p_domain_freq).fillna(0.0)
         feat["r_domain_freq"] = feat["_r_domain_raw"].map(self.r_domain_freq).fillna(0.0)
 
-        feat.drop(columns=["_p_domain_raw", "_r_domain_raw"], inplace=True)
+        feat = feat.drop(columns=["_p_domain_raw", "_r_domain_raw"])
 
         # Ensure identical column alignment
         feat = feat.reindex(columns=self.feature_names, fill_value=0.0)
