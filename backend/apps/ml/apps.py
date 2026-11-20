@@ -28,5 +28,5 @@ class MLConfig(AppConfig):
             if p.exists():
                 bundle = joblib.load(str(p))
                 check_model_compatibility(bundle, raise_exception=False)
-        except (FileNotFoundError, ValueError, RuntimeError, OSError) as exc:
+        except Exception as exc:
             logger.warning("ML startup check warning: %s", exc)
