@@ -34,9 +34,9 @@ ENV/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-/backend/staticfiles/
 /backend/media/
-/backend/ml_models/
+/backend/ml_models/*
+!/backend/ml_models/ieee_cis_rf.joblib
 
 # Environment files
 .env
@@ -82,6 +82,7 @@ Thumbs.db
 # ML artefacts
 *.pkl
 *.joblib
+!backend/ml_models/ieee_cis_rf.joblib
 *.h5
 *.onnx
 
