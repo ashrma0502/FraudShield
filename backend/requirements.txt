@@ -1,43 +1,80 @@
-asgiref==3.13.0
-attrs==26.1.0
-cloudpickle==3.1.2
-coverage==7.17.0
+# ==============================================================================
+# FraudShield Backend & ML Pipeline — Dependencies
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Django & Web Framework Core
+# ------------------------------------------------------------------------------
 Django==6.1.2
-django-cors-headers==4.9.0
-django-filter==26.2
+asgiref==3.13.0
+sqlparse==0.6.0
+tzdata==2026.5
+
+# ------------------------------------------------------------------------------
+# 2. REST Framework, Authentication & CORS
+# ------------------------------------------------------------------------------
 djangorestframework==3.18.3
 djangorestframework_simplejwt==5.5.1
+PyJWT==2.15.1
+django-cors-headers==4.9.0
+django-filter==26.2
+
+# ------------------------------------------------------------------------------
+# 3. OpenAPI Schema & Documentation (drf-spectacular)
+# ------------------------------------------------------------------------------
 drf-spectacular==0.30.0
-gunicorn==26.2.0
-imbalanced-learn==0.14.2
-inflection==0.5.1
-iniconfig==2.3.1
-joblib==1.6.0
+PyYAML==6.0.3
 jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
-narwhals==2.28.0
-numpy==2.5.4
-packaging==26.3
-pandas==3.1.0
-pluggy==1.7.0
-psycopg2-binary==2.9.13
-Pygments==2.21.0
-PyJWT==2.15.1
-pytest==9.2.0
-pytest-django==4.14.0
-python-dateutil==3.0.0
-python-decouple==3.8
-PyYAML==6.0.3
 referencing==0.37.0
 rpds-py==2026.9.1
-ruff==0.17.3
-scikit-learn==1.9.1
-scipy==1.18.1
-six==1.17.0
-sklearn-compat==0.1.6
-sqlparse==0.6.0
-tabulate==0.10.0
-threadpoolctl==3.7.0
-tzdata==2026.5
+attrs==26.1.0
+inflection==0.5.1
 uritemplate==4.2.0
+Pygments==2.21.0
+
+# ------------------------------------------------------------------------------
+# 4. Database & Environment Configuration
+# ------------------------------------------------------------------------------
+psycopg2-binary==2.9.13
+python-decouple==3.8
+
+# ------------------------------------------------------------------------------
+# 5. Machine Learning, Feature Engineering & Statistical Evaluation
+# ------------------------------------------------------------------------------
+scikit-learn==1.9.1
+pandas==3.1.0
+numpy==2.5.4
+scipy==1.18.1
+imbalanced-learn==0.14.2
+joblib==1.6.0
+tabulate==0.10.0
+sklearn-compat==0.1.6
+threadpoolctl==3.7.0
+cloudpickle==3.1.2
+narwhals==2.28.0
+python-dateutil==3.0.0
+six==1.17.0
+packaging==26.3
+
+# ------------------------------------------------------------------------------
+# 6. Exploratory Data Analysis & Visualization (Notebooks / EDA)
+# ------------------------------------------------------------------------------
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# ------------------------------------------------------------------------------
+# 7. Production WSGI Server & Static File Management
+# ------------------------------------------------------------------------------
+gunicorn==26.2.0
 whitenoise==6.12.0
+
+# ------------------------------------------------------------------------------
+# 8. Testing Suite & Code Quality
+# ------------------------------------------------------------------------------
+pytest==9.2.0
+pytest-django==4.14.0
+coverage==7.17.0
+iniconfig==2.3.1
+pluggy==1.7.0
+ruff==0.17.3
